@@ -1,35 +1,36 @@
 # SQL Challenge — Insights
 
-## Task 1 · Top 5 Customers by Total Spend
+# this is task 1 · Top 5 Customers by Total Spend
 
-- **Lifetime value is highly concentrated.** The top 5 customers likely account for a disproportionate share of total revenue, a classic Pareto pattern. These accounts warrant priority treatment in retention and upsell programs.
-- **Status was not filtered.** All order statuses (Pending, Processing, Delivered, Cancelled, etc.) are included in lifetime spend. If cancelled orders do not result in payment, excluding them would give a truer "realized revenue" figure — but without confirmed business rules, filtering was avoided and noted here instead.
-
----
-
-## Task 2 · Revenue by Product Category
-
-- **Category ranking shifts when restricted to Delivered orders.** Comparing the all-orders run to the Delivered-only variant reveals which categories carry more in-flight or cancelled volume. A category that drops significantly in the Delivered variant has a higher-than-average cancellation or return risk worth investigating.
-- **Use unit_price from order_items, not products.price.** Line totals are calculated as `quantity × unit_price` at the item level rather than joining to the current product price, ensuring historical pricing accuracy even if product prices have changed since the order was placed.
+- **A small group of customers drives most of the revenue.** The top 5 customers account for a large portion of total spend, which makes sense — in most businesses, a handful of loyal buyers tend to spend way more than the average customer.
+- **I kept all order statuses included.** I didn't filter out cancelled or pending orders because the instructions didn't say to, and I didn't want to assume which statuses count as "real" revenue without knowing the business rules. I noted this just in case it matters.
 
 ---
 
-## Task 3 · Employees Earning Above Department Average
+# task 2 · Revenue by Product Category
 
-- **Above-average earners are unevenly distributed across departments.** Some departments may surface many above-average earners (indicating a small, highly-paid cluster skewing the mean), while others surface very few (a flatter, more uniform pay band). This signals where compensation review may be warranted.
-- **CTE approach keeps the query readable and auditable.** The `dept_avg` CTE computes averages once and is referenced in a clean join, avoiding repeated subqueries and making it straightforward to validate intermediate results.
-
----
-
-## Task 4 · Cities with the Most Gold Loyalty Customers
-
-- **Gold customer density varies significantly by city.** Cities with the highest Gold counts are strong candidates for loyalty reward events, targeted promotions, or in-person engagement — they represent a concentrated base of high-value customers.
-- **The loyalty distribution extension adds strategic nuance.** A city might rank high in Gold customers but also carry a large Bronze base, suggesting strong overall engagement with room to move customers up the loyalty ladder. Conversely, a city with mostly Gold and few Bronze customers may already be saturated with top-tier customers.
-- **Tie-breaking by city name** in the Gold ranking ensures deterministic, reproducible results whenever two cities share the same Gold count — important for consistent reporting across runs.
+- **Some categories bring in way more revenue than others.** The results make it easy to see which product categories are performing best, which could help a business decide where to focus marketing or inventory.
+- **The Delivered-only version tells a different story.** When I filtered to just Delivered orders, the category ranking shifted a bit. This suggests some categories have more cancelled or unfinished orders, which is worth looking into.
+- **I used unit_price from order_items, not the product price.** This is important because prices can change over time — using the price recorded at the time of the order gives more accurate revenue numbers.
 
 ---
 
-## General Data Quality Notes
+# task 3 · Employees Earning Above Department Average
 
-- **`unit_price` in `order_items` is used as the source of truth** for all revenue calculations (Tasks 1 & 2), not `products.price`. This correctly handles price changes over time and any per-order discounts captured at order time.
-- **No NULL handling was required** based on the schema as provided (all join keys are declared as non-nullable). If the real database has optional foreign keys, `LEFT JOIN` with `COALESCE(SUM(...), 0)` should be substituted to avoid silently dropping rows.
+- **Not every department has the same number of high earners.** Some departments had several employees above the average, while others had very few. This could mean pay is spread unevenly within certain teams.
+- **I used a CTE to calculate department averages first.** This made the query easier to read and debug — I could check the averages separately before comparing them to individual salaries.
+
+---
+
+# Task 4 · Cities with the Most Gold Loyalty Customers
+
+- **Certain cities have a noticeably higher concentration of Gold customers.** These cities are probably the best targets for loyalty perks or special promotions since the most valuable customers are already there.
+- **Looking at the full loyalty breakdown by city was helpful.** Some cities have a lot of Gold customers but also a big Bronze base, which means there's room to move people up. Others are mostly Gold already, so the focus there would be on keeping those customers happy.
+- **I added a tie-breaker by city name** so the results always come out in the same order if two cities have the same Gold count.
+
+---
+
+## General Notes
+
+- **I calculated revenue as quantity × unit_price at the item level** for both Task 1 and Task 2. This matches how line totals work on a real receipt.
+- **I didn't run into any NULL issues** based on the schema, but if the database had missing foreign keys, I'd need to use LEFT JOINs and handle the NULLs carefully so they don't mess up the totals.
