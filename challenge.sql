@@ -1,5 +1,5 @@
 -- ============================================================
--- challenge.sql
+-- challenge.sql 
 -- Tool: SQLite (compatible with bais_sqlite_lab.db)
 -- Validation: Queries were written against the provided schema
 --   and validated by cross-checking join logic, alias usage,
